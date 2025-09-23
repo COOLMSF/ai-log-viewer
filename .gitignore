@@ -1,0 +1,18 @@
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Node.js
+node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*~
+
+# Logs and DBs
+*.log
+*.sqlite
