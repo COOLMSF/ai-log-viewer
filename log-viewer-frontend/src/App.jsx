@@ -147,9 +147,9 @@ function App() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <FileText className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold">Log Viewer</h1>
+              <h1 className="text-2xl font-bold">紫光云服务AI日志分析平台</h1>
             </div>
-            <Badge variant="secondary">Advanced Log Analysis Tool</Badge>
+            <Badge variant="secondary">紫光云服务AI日志分析平台</Badge>
           </div>
         </div>
       </header>
@@ -157,8 +157,8 @@ function App() {
       <div className="container mx-auto px-4 py-6">
         <Tabs defaultValue="upload" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="upload">Upload & Manage</TabsTrigger>
-            <TabsTrigger value="viewer">Log Viewer</TabsTrigger>
+            <TabsTrigger value="upload">上传管理</TabsTrigger>
+            <TabsTrigger value="viewer">日志查看</TabsTrigger>
           </TabsList>
 
           {/* Upload Tab */}
@@ -166,9 +166,9 @@ function App() {
             {/* Upload Area */}
             <Card>
               <CardHeader>
-                <CardTitle>Upload Log Files</CardTitle>
+                <CardTitle>上传日志文件</CardTitle>
                 <CardDescription>
-                  Drag and drop log files or click to browse. Supports .log, .txt, .out, .err, and .json files up to 100MB.
+                  拖拽日志文件或点击浏览。支持 .log、.txt、.out、.err 和 .json 文件，最大 100MB。
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -183,12 +183,12 @@ function App() {
                   <input {...getInputProps()} />
                   <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                   {isDragActive ? (
-                    <p className="text-lg">Drop the files here...</p>
+                    <p className="text-lg">将文件放在这里...</p>
                   ) : (
                     <div>
-                      <p className="text-lg mb-2">Drag & drop log files here, or click to select</p>
+                      <p className="text-lg mb-2">拖拽日志文件到此处，或点击选择</p>
                       <p className="text-sm text-muted-foreground">
-                        Supports: syslog, dmesg, Kubernetes, MySQL, Nginx, Apache, Docker logs
+                        支持: syslog, dmesg, Kubernetes, MySQL, Nginx, Apache, Docker 日志
                       </p>
                     </div>
                   )}
@@ -206,16 +206,16 @@ function App() {
             {/* Files List */}
             <Card>
               <CardHeader>
-                <CardTitle>Uploaded Files ({files.length})</CardTitle>
+                <CardTitle>已上传文件 ({files.length})</CardTitle>
                 <CardDescription>
-                  Manage your uploaded log files
+                  管理您上传的日志文件
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {files.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <FileText className="mx-auto h-12 w-12 mb-4" />
-                    <p>No files uploaded yet</p>
+                    <p>暂无上传文件</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -252,7 +252,7 @@ function App() {
                             onClick={() => loadFileContent(file.id)}
                           >
                             <Eye className="h-4 w-4 mr-1" />
-                            View
+                            查看
                           </Button>
                           <Button
                             variant="outline"
@@ -260,6 +260,7 @@ function App() {
                             onClick={() => deleteFile(file.id)}
                           >
                             <Trash2 className="h-4 w-4" />
+                            删除
                           </Button>
                         </div>
                       </div>

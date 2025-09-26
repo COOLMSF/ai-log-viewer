@@ -138,14 +138,14 @@ const AIAnalysisPanel = ({ selectedText, fileId, onClose }) => {
           <Alert>
             <Brain className="h-4 w-4" />
             <AlertDescription>
-              <strong>Demo Mode:</strong> {analysis.demo_analysis.summary}
+              <strong>演示模式:</strong> {analysis.demo_analysis.summary}
             </AlertDescription>
           </Alert>
 
           <div className="space-y-3">
             <h4 className="font-semibold flex items-center">
               <Lightbulb className="h-4 w-4 mr-2" />
-              Configuration Required
+              需要配置
             </h4>
             {analysis.demo_analysis.recommendations.map((rec, index) => (
               <div key={index} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
@@ -176,7 +176,7 @@ const AIAnalysisPanel = ({ selectedText, fileId, onClose }) => {
         <div className="p-4 bg-muted/30 rounded-lg">
           <h4 className="font-semibold mb-2 flex items-center">
             <Brain className="h-4 w-4 mr-2" />
-            Analysis Summary
+            分析摘要
           </h4>
           <p className="text-sm">{typeof result === 'string' ? result : result.summary}</p>
           {result.severity && (
@@ -191,7 +191,7 @@ const AIAnalysisPanel = ({ selectedText, fileId, onClose }) => {
           <div className="space-y-3">
             <h4 className="font-semibold flex items-center">
               <AlertTriangle className="h-4 w-4 mr-2" />
-              Issues Found ({result.issues.length})
+              发现问题 ({result.issues.length})
             </h4>
             {result.issues.map((issue, index) => (
               <div key={index} className="p-3 border rounded-lg">
@@ -207,7 +207,7 @@ const AIAnalysisPanel = ({ selectedText, fileId, onClose }) => {
                 <p className="text-sm mb-2">{issue.description}</p>
                 {issue.recommendation && (
                   <div className="p-2 bg-blue-50 rounded text-sm">
-                    <strong>Recommendation:</strong> {issue.recommendation}
+                    <strong>建议:</strong> {issue.recommendation}
                   </div>
                 )}
               </div>
@@ -220,7 +220,7 @@ const AIAnalysisPanel = ({ selectedText, fileId, onClose }) => {
           <div className="space-y-3">
             <h4 className="font-semibold flex items-center">
               <CheckCircle className="h-4 w-4 mr-2" />
-              Recommendations
+              建议
             </h4>
             {result.recommendations.map((rec, index) => (
               <div key={index} className="p-3 bg-green-50 rounded-lg border border-green-200">
@@ -235,13 +235,13 @@ const AIAnalysisPanel = ({ selectedText, fileId, onClose }) => {
           <div className="space-y-3">
             <h4 className="font-semibold flex items-center">
               <TrendingUp className="h-4 w-4 mr-2" />
-              Patterns Detected
+              检测到的模式
             </h4>
             {result.patterns.map((pattern, index) => (
               <div key={index} className="p-3 border rounded-lg">
                 <p className="text-sm font-medium">{pattern.description}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Frequency: {pattern.frequency} | {pattern.significance}
+                  频率: {pattern.frequency} | {pattern.significance}
                 </p>
               </div>
             ))}
@@ -251,19 +251,19 @@ const AIAnalysisPanel = ({ selectedText, fileId, onClose }) => {
         {/* Metrics */}
         {result.key_metrics && (
           <div className="p-3 bg-muted/20 rounded-lg">
-            <h4 className="font-semibold mb-2">Key Metrics</h4>
+            <h4 className="font-semibold mb-2">关键指标</h4>
             <div className="grid grid-cols-2 gap-2 text-sm">
               {result.key_metrics.error_count !== undefined && (
-                <div>Errors: {result.key_metrics.error_count}</div>
+                <div>错误: {result.key_metrics.error_count}</div>
               )}
               {result.key_metrics.warning_count !== undefined && (
-                <div>Warnings: {result.key_metrics.warning_count}</div>
+                <div>警告: {result.key_metrics.warning_count}</div>
               )}
               {result.key_metrics.unique_sources && (
-                <div>Sources: {result.key_metrics.unique_sources.length}</div>
+                <div>来源: {result.key_metrics.unique_sources.length}</div>
               )}
               {result.key_metrics.time_range && (
-                <div>Time Range: {result.key_metrics.time_range}</div>
+                <div>时间范围: {result.key_metrics.time_range}</div>
               )}
             </div>
           </div>
@@ -278,8 +278,8 @@ const AIAnalysisPanel = ({ selectedText, fileId, onClose }) => {
         <CardContent className="flex items-center justify-center h-full">
           <div className="text-center text-muted-foreground">
             <Target className="mx-auto h-12 w-12 mb-4" />
-            <p>Select log text to analyze</p>
-            <p className="text-sm">Highlight text in the log viewer to get AI insights</p>
+            <p>选择日志文本进行分析</p>
+            <p className="text-sm">在日志查看器中高亮文本以获取AI洞察</p>
           </div>
         </CardContent>
       </Card>
@@ -293,14 +293,14 @@ const AIAnalysisPanel = ({ selectedText, fileId, onClose }) => {
           <div>
             <CardTitle className="flex items-center">
               <Zap className="h-5 w-5 mr-2" />
-              AI Analysis
+              AI 分析
             </CardTitle>
             <CardDescription>
-              {config?.configured ? 'Powered by DeepSeek AI' : 'Demo Mode - Configure API key for full functionality'}
+              {config?.configured ? '由DeepSeek AI驱动' : '演示模式 - 配置API密钥以获得完整功能'}
             </CardDescription>
           </div>
           <Button variant="outline" size="sm" onClick={onClose}>
-            Close
+            关闭
           </Button>
         </div>
       </CardHeader>
@@ -308,7 +308,7 @@ const AIAnalysisPanel = ({ selectedText, fileId, onClose }) => {
       <CardContent className="flex-1 flex flex-col space-y-4">
         {/* Selected Text */}
         <div className="p-3 bg-muted/30 rounded-lg">
-          <h4 className="font-semibold mb-2 text-sm">Selected Text ({selectedText.length} chars)</h4>
+          <h4 className="font-semibold mb-2 text-sm">选定文本 ({selectedText.length} 字符)</h4>
           <ScrollArea className="h-20">
             <p className="text-xs font-mono">{selectedText}</p>
           </ScrollArea>
@@ -322,7 +322,7 @@ const AIAnalysisPanel = ({ selectedText, fileId, onClose }) => {
             className="flex-1"
           >
             {loading ? <Clock className="h-4 w-4 mr-2 animate-spin" /> : <Brain className="h-4 w-4 mr-2" />}
-            Analyze
+            分析
           </Button>
         </div>
 
@@ -331,7 +331,7 @@ const AIAnalysisPanel = ({ selectedText, fileId, onClose }) => {
           <div className="space-y-2">
             <h4 className="font-semibold text-sm flex items-center">
               <Lightbulb className="h-4 w-4 mr-2" />
-              Suggested Analysis
+              建议分析
             </h4>
             <div className="space-y-1">
               {suggestions.slice(0, 3).map((suggestion, index) => (
@@ -352,9 +352,9 @@ const AIAnalysisPanel = ({ selectedText, fileId, onClose }) => {
 
         {/* Custom Question */}
         <div className="space-y-2">
-          <h4 className="font-semibold text-sm">Ask Specific Question</h4>
+          <h4 className="font-semibold text-sm">提出具体问题</h4>
           <Textarea
-            placeholder="e.g., Why are there authentication failures? What caused the database errors?"
+            placeholder="例如，为什么出现身份验证失败？数据库错误的原因是什么？"
             value={customQuestion}
             onChange={(e) => setCustomQuestion(e.target.value)}
             className="min-h-[60px]"
@@ -366,7 +366,7 @@ const AIAnalysisPanel = ({ selectedText, fileId, onClose }) => {
             variant="outline"
             className="w-full"
           >
-            Ask AI
+            询问AI
           </Button>
         </div>
 
@@ -378,7 +378,7 @@ const AIAnalysisPanel = ({ selectedText, fileId, onClose }) => {
             <div className="flex items-center justify-center py-8">
               <div className="text-center">
                 <Clock className="h-8 w-8 animate-spin mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">Analyzing...</p>
+                <p className="text-sm text-muted-foreground">分析中...</p>
               </div>
             </div>
           )}

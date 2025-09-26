@@ -169,8 +169,8 @@ const LogViewer = ({ selectedFile, onAnalyzeRequest }) => {
         <CardContent className="flex items-center justify-center h-full">
           <div className="text-center text-muted-foreground">
             <Eye className="mx-auto h-12 w-12 mb-4" />
-            <p>No file selected</p>
-            <p className="text-sm">Upload and select a file to view its contents</p>
+            <p>未选择文件</p>
+            <p className="text-sm">上传并选择文件以查看其内容</p>
           </div>
         </CardContent>
       </Card>
@@ -184,8 +184,8 @@ const LogViewer = ({ selectedFile, onAnalyzeRequest }) => {
           <div>
             <CardTitle>{selectedFile.original_filename}</CardTitle>
             <CardDescription>
-              {selectedFile.file_size} bytes • {selectedFile.log_type} • {formatTimestamp(selectedFile.upload_time)}
-              {selectedFile.processed && <span className="ml-2 text-green-600">• Processed</span>}
+              {selectedFile.file_size} 字节 • {selectedFile.log_type} • {formatTimestamp(selectedFile.upload_time)}
+              {selectedFile.processed && <span className="ml-2 text-green-600">• 已处理</span>}
             </CardDescription>
           </div>
           <div className="flex items-center space-x-2">
@@ -194,14 +194,14 @@ const LogViewer = ({ selectedFile, onAnalyzeRequest }) => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="parsed">Parsed</SelectItem>
-                <SelectItem value="raw">Raw</SelectItem>
+                <SelectItem value="parsed">解析</SelectItem>
+                <SelectItem value="raw">原始</SelectItem>
               </SelectContent>
             </Select>
             {selectedText && (
               <Button onClick={handleAnalyze} size="sm" className="bg-purple-600 hover:bg-purple-700">
                 <Zap className="h-4 w-4 mr-1" />
-                Analyze
+                分析
               </Button>
             )}
           </div>
@@ -212,13 +212,13 @@ const LogViewer = ({ selectedFile, onAnalyzeRequest }) => {
           <div className="flex-1 flex items-center space-x-2">
             <Search className="h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search logs..."
+              placeholder="搜索日志..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               className="flex-1"
             />
-            <Button onClick={handleSearch} size="sm">Search</Button>
+            <Button onClick={handleSearch} size="sm">搜索</Button>
           </div>
           <div className="flex items-center space-x-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
@@ -227,11 +227,11 @@ const LogViewer = ({ selectedFile, onAnalyzeRequest }) => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Levels</SelectItem>
-                <SelectItem value="error">Error</SelectItem>
-                <SelectItem value="warning">Warning</SelectItem>
-                <SelectItem value="info">Info</SelectItem>
-                <SelectItem value="debug">Debug</SelectItem>
+                <SelectItem value="all">所有级别</SelectItem>
+                <SelectItem value="error">错误</SelectItem>
+                <SelectItem value="warning">警告</SelectItem>
+                <SelectItem value="info">信息</SelectItem>
+                <SelectItem value="debug">调试</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -243,7 +243,7 @@ const LogViewer = ({ selectedFile, onAnalyzeRequest }) => {
           <div className="flex items-center justify-center flex-1">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading entries...</p>
+              <p className="text-muted-foreground">正在加载条目...</p>
             </div>
           </div>
         ) : error ? (
@@ -252,7 +252,7 @@ const LogViewer = ({ selectedFile, onAnalyzeRequest }) => {
           </div>
         ) : entries.length === 0 ? (
           <div className="flex items-center justify-center flex-1 text-muted-foreground">
-            <p>No log entries found</p>
+            <p>未找到日志条目</p>
           </div>
         ) : (
           <>
@@ -270,7 +270,7 @@ const LogViewer = ({ selectedFile, onAnalyzeRequest }) => {
             {pagination && pagination.pages > 1 && (
               <div className="flex items-center justify-between mt-4 pt-4 border-t">
                 <div className="text-sm text-muted-foreground">
-                  Page {pagination.page} of {pagination.pages} ({pagination.total} entries)
+                  第 {pagination.page} 页，共 {pagination.pages} 页 ({pagination.total} 条目)
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
@@ -280,7 +280,7 @@ const LogViewer = ({ selectedFile, onAnalyzeRequest }) => {
                     disabled={currentPage <= 1}
                   >
                     <ChevronLeft className="h-4 w-4" />
-                    Previous
+                    上一页
                   </Button>
                   <Button
                     variant="outline"
@@ -288,7 +288,7 @@ const LogViewer = ({ selectedFile, onAnalyzeRequest }) => {
                     onClick={() => setCurrentPage(currentPage + 1)}
                     disabled={currentPage >= pagination.pages}
                   >
-                    Next
+                    下一页
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
