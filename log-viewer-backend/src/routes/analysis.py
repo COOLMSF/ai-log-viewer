@@ -48,7 +48,7 @@ def analyze_text():
                 context = {
                     'file_type': log_file.log_type,
                     'file_name': log_file.original_filename,
-                    'total_lines': log_file.entry_count
+                    'total_lines': len(log_file.entries)
                 }
         
         # Initialize AI analyzer
@@ -64,10 +64,8 @@ def analyze_text():
         if result.get('success') and file_id:
             analysis_record = AnalysisResult(
                 log_file_id=file_id,
-                analyzed_text=text[:1000],  # Store first 1000 chars
-                analysis_result=result.get('analysis', {}),
-                model_used=result.get('model', 'deepseek-chat'),
-                token_usage=result.get('token_usage', {})
+                selected_text=text[:1000],  # Store first 1000 chars
+                analysis=str(result.get('analysis', {}))  # Convert to string to match Text field
             )
             db.session.add(analysis_record)
             db.session.commit()
@@ -127,11 +125,9 @@ def get_analysis_history(file_id):
         for analysis in analyses:
             history.append({
                 'id': analysis.id,
-                'analyzed_text': analysis.analyzed_text[:100] + '...' if len(analysis.analyzed_text) > 100 else analysis.analyzed_text,
-                'analysis_summary': analysis.analysis_result.get('summary', 'No summary available') if isinstance(analysis.analysis_result, dict) else str(analysis.analysis_result)[:200],
-                'model_used': analysis.model_used,
+                'selected_text': analysis.selected_text[:100] + '...' if len(analysis.selected_text) > 100 else analysis.selected_text,
+                'analysis_summary': analysis.analysis[:200] + '...' if len(analysis.analysis) > 200 else analysis.analysis,
                 'created_at': analysis.created_at.isoformat(),
-                'token_usage': analysis.token_usage
             })
         
         return jsonify({

@@ -17,6 +17,10 @@ class LogFile(db.Model):
     # Relationship to log entries
     entries = db.relationship('LogEntry', backref='log_file', lazy=True, cascade='all, delete-orphan')
     
+    @property
+    def entry_count(self):
+        return len(self.entries)
+    
     def to_dict(self):
         return {
             'id': self.id,
@@ -26,7 +30,7 @@ class LogFile(db.Model):
             'log_type': self.log_type,
             'upload_time': self.upload_time.isoformat() if self.upload_time else None,
             'processed': self.processed,
-            'entry_count': len(self.entries)
+            'entry_count': self.entry_count
         }
 
 class LogEntry(db.Model):
