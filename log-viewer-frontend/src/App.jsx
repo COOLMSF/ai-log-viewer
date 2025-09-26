@@ -20,6 +20,7 @@ function App() {
   const [error, setError] = useState('')
   const [analysisText, setAnalysisText] = useState('')
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false)
+  const [activeTab, setActiveTab] = useState('upload')
 
   // Fetch uploaded files
   const fetchFiles = async () => {
@@ -69,6 +70,8 @@ function App() {
       if (response.ok) {
         const data = await response.json()
         setSelectedFile(data.file)
+        // Automatically switch to viewer tab when loading file content
+        setActiveTab('viewer')
       }
     } catch (err) {
       setError('Failed to load file')
@@ -155,7 +158,7 @@ function App() {
       </header>
 
       <div className="container mx-auto px-4 py-6">
-        <Tabs defaultValue="upload" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="upload">上传管理</TabsTrigger>
             <TabsTrigger value="viewer">日志查看</TabsTrigger>

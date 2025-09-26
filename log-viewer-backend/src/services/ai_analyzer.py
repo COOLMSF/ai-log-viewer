@@ -40,23 +40,12 @@ class AIAnalyzer:
                 max_tokens=2000
             )
             
-            # Parse the response
+            # Get the response - now it should be markdown text
             analysis_text = response.choices[0].message.content
-            
-            # Try to parse as JSON if possible, otherwise return as text
-            try:
-                analysis_data = json.loads(analysis_text)
-            except json.JSONDecodeError:
-                analysis_data = {
-                    "summary": analysis_text,
-                    "issues": [],
-                    "recommendations": [],
-                    "severity": "info"
-                }
             
             return {
                 "success": True,
-                "analysis": analysis_data,
+                "analysis": analysis_text,  # Return the markdown text directly
                 "timestamp": datetime.utcnow().isoformat(),
                 "model": self.model,
                 "token_usage": {
@@ -75,7 +64,7 @@ class AIAnalyzer:
     
     def _get_system_prompt(self) -> str:
         """Get the system prompt for log analysis"""
-        return """You are an expert system administrator and log analysis specialist. Your task is to analyze log entries and provide actionable insights.
+        return """You are a senior operations (运维) and development (研发) expert. Analyze the provided log text and return your analysis in Chinese in Markdown format. Focus only on useful information and avoid unnecessary output.
 
 When analyzing logs, focus on:
 1. Identifying errors, warnings, and critical issues
@@ -86,56 +75,56 @@ When analyzing logs, focus on:
 6. Network connectivity issues
 7. Resource utilization problems
 
-Provide your analysis in the following JSON format:
-{
-    "summary": "Brief overview of the log analysis",
-    "severity": "critical|high|medium|low|info",
-    "issues": [
-        {
-            "type": "error|warning|security|performance|configuration",
-            "description": "Description of the issue",
-            "line_numbers": [1, 2, 3],
-            "severity": "critical|high|medium|low",
-            "recommendation": "Specific action to take"
-        }
-    ],
-    "patterns": [
-        {
-            "description": "Pattern observed in the logs",
-            "frequency": "Number or description of frequency",
-            "significance": "Why this pattern is important"
-        }
-    ],
-    "recommendations": [
-        "Specific actionable recommendations based on the analysis"
-    ],
-    "key_metrics": {
-        "error_count": 0,
-        "warning_count": 0,
-        "unique_sources": [],
-        "time_range": "Description of time range if applicable"
-    }
-}
+Provide your analysis in Markdown format with the following structure:
+# 分析摘要
+[Provide a brief overview of the log analysis in a paragraph or two]
 
-Be concise but thorough. Focus on actionable insights rather than just describing what's in the logs."""
+## 严重程度
+[critical|high|medium|low|info]
+
+## 发现问题
+For each issue found:
+### [Issue Type]
+- **描述**: [Issue description]
+- **严重程度**: [critical|high|medium|low]
+- **建议**: [Specific action to take]
+
+## 检测到的模式
+For each pattern detected:
+### [Pattern description]
+- **频率**: [Number or description of frequency]
+- **重要性**: [Why this pattern is important]
+
+## 建议
+- [Specific actionable recommendation 1]
+- [Specific actionable recommendation 2]
+- [Specific actionable recommendation 3]
+
+## 关键指标
+- **错误数量**: [Number of errors]
+- **警告数量**: [Number of warnings]
+- **来源数量**: [Number of unique sources]
+- **时间范围**: [Description of time range if applicable]
+
+回答必须使用中文，并以Markdown格式返回，不要使用JSON格式。专注于可操作的见解，而不是仅仅描述日志中的内容。仅输出最有用的信息，格式要清晰美观。"""
 
     def _build_user_prompt(self, log_text: str, context: Dict = None) -> str:
         """Build the user prompt with log text and context"""
-        prompt = f"Please analyze the following log entries:\n\n{log_text}\n\n"
+        prompt = f"请分析以下日志条目并以中文Markdown格式返回分析结果。只关注有用信息，避免不必要的输出。\n\n{log_text}\n\n"
         
         if context:
-            prompt += "Additional context:\n"
+            prompt += "附加上下文:\n"
             if context.get('file_type'):
-                prompt += f"- Log type: {context['file_type']}\n"
+                prompt += f"- 日志类型: {context['file_type']}\n"
             if context.get('file_name'):
-                prompt += f"- File name: {context['file_name']}\n"
+                prompt += f"- 文件名: {context['file_name']}\n"
             if context.get('time_range'):
-                prompt += f"- Time range: {context['time_range']}\n"
+                prompt += f"- 时间范围: {context['time_range']}\n"
             if context.get('total_lines'):
-                prompt += f"- Total lines in file: {context['total_lines']}\n"
+                prompt += f"- 文件总行数: {context['total_lines']}\n"
             prompt += "\n"
         
-        prompt += "Provide a comprehensive analysis focusing on potential issues, security concerns, and actionable recommendations."
+        prompt += "请以中文Markdown格式提供全面的分析，重点关注潜在问题、安全问题和可操作的建议。只输出有用信息，格式要清晰美观。"
         
         return prompt
 
@@ -151,23 +140,23 @@ Be concise but thorough. Focus on actionable insights rather than just describin
             Dictionary containing targeted analysis results
         """
         try:
-            system_prompt = """You are an expert system administrator. Analyze the provided logs to answer a specific question or investigate a particular issue. Provide a focused, actionable response."""
+            system_prompt = """You are a senior operations (运维) and development (研发) expert. Analyze the provided logs to answer a specific question or investigate a particular issue. Provide a focused, actionable response in Chinese in Markdown format. Focus only on useful information and avoid unnecessary output. Do not return results in JSON format."""
             
-            user_prompt = f"""Please analyze these logs to investigate the following issue:
+            user_prompt = f"""请分析这些日志以调查以下问题：
 
-ISSUE/QUESTION: {issue_description}
+问题/问题: {issue_description}
 
-LOG ENTRIES:
+日志条目：
 {log_text}
 
-Provide a focused analysis addressing the specific issue. Include:
-1. Whether the issue is present in the logs
-2. Relevant log entries that relate to the issue
-3. Root cause analysis if applicable
-4. Specific recommendations to resolve or investigate further
-5. Any related patterns or concerns
+请在中文中提供针对特定问题的集中分析。包括：
+1. 问题是否存在于日志中
+2. 与问题相关的日志条目
+3. 如有需要，进行根本原因分析
+4. 解决或进一步调查的具体建议
+5. 任何相关的模式或关切
 
-Format your response as clear, actionable text."""
+以中文Markdown格式清晰、可操作地格式化您的响应。不要使用JSON格式。只关注有用信息，避免不必要的输出。格式要清晰美观。"""
 
             response = self.client.chat.completions.create(
                 model=self.model,

@@ -30,7 +30,7 @@ def analyze_text():
                             "type": "configuration",
                             "description": "DeepSeek API key not configured",
                             "severity": "medium",
-                            "recommendation": "Set the DEEPSEEK_API_KEY environment variable to enable AI analysis"
+                            "recommendation": "Set the DEEPSEEK API_KEY environment variable to enable AI analysis"
                         }
                     ],
                     "recommendations": [
