@@ -238,3 +238,137 @@ For each pattern detected:
         
         return suggestions[:5]  # Return top 5 suggestions
 
+    def analyze_log_with_symptoms(self, log_text: str, symptoms: str, context: Dict = None) -> Dict:
+        """
+        Analyze log text based on user-provided symptoms and time constraints
+        
+        Args:
+            log_text: The full log text to analyze
+            symptoms: User-provided symptoms/description of the issue
+            context: Additional context like file type, timestamp range, etc.
+            
+        Returns:
+            Dictionary containing analysis results
+        """
+        try:
+            # Prepare the analysis prompt with focus on user symptoms
+            system_prompt = self._get_agent_system_prompt()
+            user_prompt = self._build_agent_user_prompt(log_text, symptoms, context)
+            
+            # Call DeepSeek API
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.3,
+                max_tokens=2500  # Slightly higher for comprehensive analysis
+            )
+            
+            # Get the response
+            analysis_text = response.choices[0].message.content
+            
+            return {
+                "success": True,
+                "analysis": analysis_text,
+                "symptoms": symptoms,
+                "timestamp": datetime.utcnow().isoformat(),
+                "model": self.model,
+                "token_usage": {
+                    "prompt_tokens": response.usage.prompt_tokens,
+                    "completion_tokens": response.usage.completion_tokens,
+                    "total_tokens": response.usage.total_tokens
+                }
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+    
+    def _get_agent_system_prompt(self) -> str:
+        """Get the system prompt for agent-based log analysis"""
+        return """You are a senior operations (运维) and development (研发) expert. Analyze the provided log text based on the user's described symptoms to find relevant information, errors, warnings, or patterns that might be related to the reported issue. Focus on actionable insights and avoid unnecessary output.
+
+When analyzing logs with known symptoms:
+
+1. Identify log entries that directly relate to the user's reported symptoms
+2. Look for errors, warnings, or anomalies that occurred around the same time
+3. Find patterns or recurring issues that might explain the problem
+4. Correlate different log entries that might be related
+5. Identify potential root causes based on the log evidence
+6. Provide concrete recommendations for addressing the issue
+7. Highlight the most critical information that needs attention
+
+Provide your analysis in Chinese Markdown format with the following structure:
+# 问题分析
+[Provide a focused overview of the log analysis related to the user's symptoms]
+
+## 相关日志条目
+List the most relevant log entries found:
+- [Timestamp] - [Level] - [Message excerpt]
+- [Include multiple relevant entries]
+
+## 识别的问题
+For each issue found:
+### [Issue Type]
+- **描述**: [Issue description related to symptoms]
+- **严重程度**: [critical|high|medium|low]
+- **时间**: [When it occurred - specific timestamp if available]
+- **建议**: [Specific action to take]
+
+## 根本原因分析
+[Analyze potential root causes based on the log evidence]
+
+## 建议措施
+- [Specific actionable recommendation 1]
+- [Specific actionable recommendation 2]
+- [Specific actionable recommendation 3]
+
+## 时间线
+[If applicable, present a timeline of events related to the issue]
+
+## 关键指标
+- **相关错误数量**: [Number of errors related to symptoms]
+- **相关警告数量**: [Number of warnings related to symptoms]
+- **时间范围**: [Description of time range analyzed]
+
+回答必须使用中文，并以Markdown格式返回，不要使用JSON格式。专注于与用户症状直接相关的信息，而不是 general log content. 仅输出最有用的信息，格式要清晰美观。"""
+
+    def _build_agent_user_prompt(self, log_text: str, symptoms: str, context: Dict = None) -> str:
+        """Build the user prompt for agent-based analysis with symptoms and context"""
+        prompt = f"""请分析以下日志，重点关注与用户描述的症状相关的条目：
+
+用户症状: {symptoms}
+
+完整日志内容:
+{log_text}
+
+"""
+        
+        if context:
+            prompt += "附加上下文信息:\n"
+            if context.get('file_type'):
+                prompt += f"- 日志类型: {context['file_type']}\n"
+            if context.get('file_name'):
+                prompt += f"- 文件名: {context['file_name']}\n"
+            if context.get('total_entries'):
+                prompt += f"- 分析条目数: {context['total_entries']}\n"
+            if context.get('time_range'):
+                prompt += f"- 时间范围: {context['time_range']}\n"
+            prompt += "\n"
+        
+        prompt += """请提供中文Markdown格式的详细分析，重点关注与用户症状相关的日志条目。包括：
+1. 与症状直接相关的日志条目
+2. 时间上与问题发生相近的错误或警告
+3. 潜在的根本原因分析
+4. 具体的解决建议
+5. 相关模式或异常
+
+以中文Markdown格式清楚、有操作性地格式化您的响应。不要使用JSON格式。只关注与用户症状相关的信息，避免一般性描述。格式要清晰美观。"""
+        
+        return prompt
+

@@ -4,10 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
 import { ScrollArea } from '@/components/ui/scroll-area.jsx'
-import { Upload, FileText, Trash2, Eye, Download, AlertCircle } from 'lucide-react'
+import { Upload, FileText, Trash2, Eye, Download, AlertCircle, Zap } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import LogViewer from './components/LogViewer.jsx'
 import AIAnalysisPanel from './components/AIAnalysisPanel.jsx'
+import AgentAnalysisPanel from './components/AgentAnalysisPanel.jsx'
 import './App.css'
 
 const API_BASE = '/api/logs'
@@ -20,6 +21,7 @@ function App() {
   const [error, setError] = useState('')
   const [analysisText, setAnalysisText] = useState('')
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false)
+  const [showAgentPanel, setShowAgentPanel] = useState(false)
   const [activeTab, setActiveTab] = useState('upload')
 
   // Fetch uploaded files
@@ -159,9 +161,10 @@ function App() {
 
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="upload">上传管理</TabsTrigger>
             <TabsTrigger value="viewer">日志查看</TabsTrigger>
+            <TabsTrigger value="agent">智能代理</TabsTrigger>
           </TabsList>
 
           {/* Upload Tab */}
@@ -287,6 +290,27 @@ function App() {
                   fileId={selectedFile?.id}
                   onClose={() => setShowAnalysisPanel(false)}
                 />
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Agent Tab */}
+          <TabsContent value="agent">
+            <div className="grid gap-4 grid-cols-1 h-[calc(100vh-200px)]">
+              {selectedFile ? (
+                <AgentAnalysisPanel
+                  fileId={selectedFile.id}
+                  onClose={() => setActiveTab('viewer')}
+                />
+              ) : (
+                <Card className="flex items-center justify-center h-full">
+                  <CardContent className="text-center">
+                    <Zap className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">请选择一个日志文件</h3>
+                    <p className="text-muted-foreground mb-4">在左侧"上传管理"标签页中选择一个已上传的日志文件来开始智能代理分析</p>
+                    <Button onClick={() => setActiveTab('upload')}>前往上传管理</Button>
+                  </CardContent>
+                </Card>
               )}
             </div>
           </TabsContent>

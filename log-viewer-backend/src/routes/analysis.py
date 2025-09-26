@@ -7,7 +7,6 @@ analysis_bp = Blueprint('analysis', __name__)
 
 @analysis_bp.route('/analyze', methods=['POST'])
 def analyze_text():
-    """Analyze selected log text using AI"""
     try:
         data = request.get_json()
         text = data.get('text', '')
@@ -41,6 +40,9 @@ def analyze_text():
             }), 200
         
         # Get file context if file_id provided
+
+        
+        # Get file context if file_id provided
         context = {}
         if file_id:
             log_file = LogFile.query.get(file_id)
@@ -66,6 +68,102 @@ def analyze_text():
                 log_file_id=file_id,
                 selected_text=text[:1000],  # Store first 1000 chars
                 analysis=str(result.get('analysis', {}))  # Convert to string to match Text field
+            )
+            db.session.add(analysis_record)
+            db.session.commit()
+        
+        return jsonify(result), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@analysis_bp.route('/agent-analyze', methods=['POST'])
+def agent_analyze():
+    try:
+        data = request.get_json()
+        file_id = data.get('file_id')
+        symptoms = data.get('symptoms', '')
+        start_time = data.get('start_time')  # ISO format timestamp
+        end_time = data.get('end_time')      # ISO format timestamp
+        
+        if not file_id or not symptoms:
+            return jsonify({'error': 'File ID and symptoms are required'}), 400
+        
+        # Get the log file and its entries
+        log_file = LogFile.query.get_or_404(file_id)
+        
+        # Filter entries by time range if provided
+        query = LogEntry.query.filter_by(log_file_id=file_id)
+        if start_time:
+            from datetime import datetime
+            start_dt = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
+            query = query.filter(LogEntry.timestamp >= start_dt)
+        if end_time:
+            from datetime import datetime
+            end_dt = datetime.fromisoformat(end_time.replace('Z', '+00:00'))
+            query = query.filter(LogEntry.timestamp <= end_dt)
+        
+        entries = query.order_by(LogEntry.line_number).all()
+        
+
+        if not entries:
+            return jsonify({'error': 'No entries found in the specified time range'}), 404
+
+        # Combine all relevant log messages
+        all_log_text = "\n".join([f"{entry.timestamp} - {entry.level} - {entry.message}"
+                                 for entry in entries if entry.message.strip()])
+        
+        if not all_log_text.strip():
+            return jsonify({'error': 'No log content found to analyze'}), 404
+        
+        if not all_log_text.strip():
+            return jsonify({'error': 'No log content found to analyze'}), 404
+        
+        # Check if DeepSeek API key is configured
+        if not os.getenv('DEEPSEEK_API_KEY'):
+            return jsonify({
+                'error': 'DeepSeek API key not configured. Please set DEEPSEEK_API_KEY environment variable.',
+                'demo_mode': True,
+                'demo_analysis': {
+                    'summary': f"Demo Analysis: Analyzing for symptoms '{symptoms}' in logs from {start_time or 'beginning'} to {end_time or 'end'}. This is a demonstration of the agent analysis feature. To use real AI analysis, configure your DeepSeek API key.",
+                    'severity': 'info',
+                    'issues': [
+                        {
+                            'type': 'configuration',
+                            'description': 'DeepSeek API key not configured',
+                            'severity': 'medium',
+                            'recommendation': 'Set the DEEPSEEK API_KEY environment variable to enable AI analysis'
+                        }
+                    ],
+                    'recommendations': [
+                        'Configure DeepSeek API key to enable real-time log analysis',
+                        f'Review logs for patterns related to: {symptoms}',
+                        'Check the time range specified for the issue'
+                    ]
+                }
+            }), 200
+        
+        # Prepare context
+        context = {
+            'file_type': log_file.log_type,
+            'file_name': log_file.original_filename,
+            'total_entries': len(entries),
+            'time_range': f"{start_time} to {end_time}" if start_time and end_time else "Not specified"
+        }
+        
+        # Initialize AI analyzer
+        analyzer = AIAnalyzer()
+        
+        # Perform agent analysis
+        result = analyzer.analyze_log_with_symptoms(all_log_text, symptoms, context)
+        
+        # Store analysis result in database
+        if result.get('success'):
+            analysis_record = AnalysisResult(
+                log_file_id=file_id,
+                selected_text=f"Agent Analysis - Symptoms: {symptoms}, Time Range: {start_time} to {end_time}",
+                analysis=str(result.get('analysis', {}))
             )
             db.session.add(analysis_record)
             db.session.commit()
