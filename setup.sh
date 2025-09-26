@@ -12,8 +12,19 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
-PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+# Check if uv is installed, install if not
+if ! command -v uv &> /dev/null; then
+    echo "📦 Installing uv package manager..."
+    pip3 install uv
+    if [ $? -ne 0 ]; then
+        echo "❌ Failed to install uv. Please install it manually with: pip install uv"
+        exit 1
+    fi
+fi
+
+PYTHON_VERSION=$(python3 -c 'import sys; print("." .join(map(str, sys.version_info[:2])))')
 echo "✅ Python $PYTHON_VERSION found"
+echo "✅ uv package manager found"
 
 # Check Node.js
 if ! command -v node &> /dev/null; then
@@ -40,17 +51,18 @@ echo ""
 echo "🔧 Setting up backend..."
 cd log-viewer-backend
 
-# Create virtual environment if it doesn't exist
-if [ ! -d "venv" ]; then
-    echo "Creating Python virtual environment..."
-    python3 -m venv venv
-fi
+# Use uv to sync dependencies in a virtual environment
+echo "Installing Python dependencies with uv..."
+uv sync --locked --all-extras
 
-# Activate virtual environment and install dependencies
-echo "Installing Python dependencies..."
-source venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
+# If uv sync failed, try creating a virtual environment and installing packages
+if [ $? -ne 0 ]; then
+    echo "⚠️  uv sync failed, falling back to virtual environment with uv pip..."
+    python3 -m venv .venv
+    source .venv/bin/activate
+    uv pip install --upgrade pip
+    uv pip install -r requirements.txt
+fi
 
 # Create database directory
 mkdir -p src/database
@@ -79,7 +91,20 @@ cat > start-backend.sh << 'EOF'
 #!/bin/bash
 echo "🚀 Starting Log Viewer Backend..."
 cd log-viewer-backend
-source venv/bin/activate
+
+# Use uv run to execute the application with automatic environment management
+if command -v uv &> /dev/null; then
+    echo "Using uv to run the application..."
+    uv run src/main.py
+else
+    # Fallback to virtual environment if uv is not available
+    if [ -d ".venv" ]; then
+        source .venv/bin/activate
+    elif [ -d "venv" ]; then
+        source venv/bin/activate
+    fi
+    python src/main.py
+fi
 
 # Check for DeepSeek API key
 if [ -z "$DEEPSEEK_API_KEY" ]; then
@@ -90,7 +115,6 @@ else
 fi
 
 echo "Backend starting on http://localhost:5001"
-python src/main.py
 EOF
 
 # Frontend startup script
